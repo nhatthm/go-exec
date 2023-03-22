@@ -51,7 +51,18 @@ func TestCommandWithContext(t *testing.T) {
 	assert.NoError(t, cmd.Err)
 }
 
-func TestCmd_String(t *testing.T) {
+func TestCmd_String_LookupError(t *testing.T) {
+	t.Parallel()
+
+	cmd := exec.Command("not_found", exec.WithArgs("hello world"))
+
+	actual := cmd.String()
+	expected := "not_found 'hello world'"
+
+	assert.Equal(t, expected, actual)
+}
+
+func TestCmd_String_Pipe(t *testing.T) {
 	t.Parallel()
 
 	echoPath, err := exec.LookPath("echo")
@@ -70,7 +81,7 @@ func TestCmd_String(t *testing.T) {
 	)
 
 	actual := cmd.String()
-	expected := "%s hello world | %s -o hello | %s [:lower:] [:upper:]"
+	expected := "%s 'hello world' | %s -o hello | %s \\[:lower:] \\[:upper:]"
 	expected = fmt.Sprintf(expected, echoPath, grepPath, trPath)
 
 	assert.Equal(t, expected, actual)
