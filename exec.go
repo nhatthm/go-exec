@@ -13,6 +13,7 @@ import (
 	"strings"
 
 	"github.com/bool64/ctxd"
+	"github.com/kballard/go-shellquote"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
@@ -46,7 +47,15 @@ type Cmd struct {
 // The output of String may vary across Go releases.
 func (c *Cmd) String() string {
 	b := new(strings.Builder)
-	b.WriteString(c.Cmd.String())
+
+	if c.Err != nil {
+		b.WriteString(c.Args[0])
+	} else {
+		b.WriteString(c.Path)
+	}
+
+	b.WriteByte(' ')
+	b.WriteString(shellquote.Join(c.Args[1:]...))
 
 	if c.Next != nil {
 		b.WriteString(" | ")
@@ -97,8 +106,6 @@ func (c *Cmd) Start() error {
 
 		return err //nolint: wrapcheck
 	}
-
-	span.SetStatus(codes.Ok, "")
 
 	return nil
 }
@@ -170,7 +177,7 @@ func (c *Cmd) Wait() (err error) {
 		out := strings.Trim(c.stdErr.String(), "\r\n ")
 
 		c.logger.Debug(c.ctx, fmt.Sprintf("failed to execute `%s`", filepath.Base(c.Path)),
-			"exec.error", err,
+			"error", err,
 			"exec.exit_code", c.ProcessState.ExitCode(),
 			"exec.command", c.Cmd.String(),
 			"exec.output", out,
