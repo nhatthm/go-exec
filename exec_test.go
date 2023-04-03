@@ -337,6 +337,27 @@ func TestRun_Success_Pipe(t *testing.T) {
 	assert.Equal(t, "B", getOutput(cmdOut))
 }
 
+func Test_AppendArgs(t *testing.T) {
+	t.Parallel()
+
+	logger := &ctxd.LoggerMock{}
+	cmdOut := newSafeBuffer()
+	cmdErr := newSafeBuffer()
+
+	_, err := exec.Run("echo", exec.WithArgs("a", "b"),
+		exec.AppendArgs("c", "d"),
+		exec.WithStdout(cmdOut),
+		exec.WithStderr(cmdErr),
+		exec.WithLogger(logger),
+	)
+
+	t.Log(logger.String())
+
+	require.NoError(t, err)
+
+	assert.Equal(t, "a b c d", getOutput(cmdOut))
+}
+
 func getOutput(s fmt.Stringer) string {
 	return strings.Trim(s.String(), "\r\n ")
 }
