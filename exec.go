@@ -317,6 +317,13 @@ func WithArgs(args ...string) Option {
 	})
 }
 
+// AppendArgs appends the arguments to the existing ones.
+func AppendArgs(args ...string) Option {
+	return optionFunc(func(c *Cmd) {
+		c.Args = append(c.Args, args...)
+	})
+}
+
 // WithEnv sets the environment variable.
 func WithEnv(key, value string) Option {
 	return optionFunc(func(c *Cmd) {
