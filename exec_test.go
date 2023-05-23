@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"io"
 	"strings"
 	"sync"
 	"testing"
@@ -356,6 +357,21 @@ func Test_AppendArgs(t *testing.T) {
 	require.NoError(t, err)
 
 	assert.Equal(t, "a b c d", getOutput(cmdOut))
+}
+
+func Test_WithArgsRedaction(t *testing.T) {
+	t.Parallel()
+
+	_, err := exec.Run("echo", exec.WithArgs("hello"),
+		exec.AppendArgs("c", "d"),
+		exec.WithStdout(io.Discard),
+		exec.WithStderr(io.Discard),
+		exec.WithArgsRedaction(func(args []string) []string {
+			return nil
+		}),
+	)
+
+	require.NoError(t, err)
 }
 
 func getOutput(s fmt.Stringer) string {
