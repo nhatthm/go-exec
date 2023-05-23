@@ -79,7 +79,7 @@ func (c *Cmd) Start() error {
 
 	ctx, span := c.tracer.Start(c.ctx, "exec:run",
 		trace.WithAttributes(
-			attribute.StringSlice("exec.args", c.redact(c.Args)),
+			attribute.StringSlice("exec.args", c.redact(c.Args...)),
 		),
 	)
 
@@ -181,7 +181,7 @@ func (c *Cmd) Wait() (err error) {
 		c.logger.Debug(c.ctx, fmt.Sprintf("failed to execute `%s`", filepath.Base(c.Path)),
 			"error", err,
 			"exec.exit_code", c.ProcessState.ExitCode(),
-			"exec.command", c.Cmd.String(),
+			"exec.command", c.redact(c.Cmd.String()),
 			"exec.output", out,
 		)
 	}
@@ -229,7 +229,7 @@ func CommandContext(ctx context.Context, name string, opts ...Option) *Cmd {
 		logger: ctxd.NoOpLogger{},
 		closer: io.NopCloser(nil),
 
-		redact: func(args []string) []string {
+		redact: func(args ...string) []string {
 			return args
 		},
 	}
@@ -381,6 +381,11 @@ func WithArgsRedaction(redact argsRedactor) Option {
 	})
 }
 
+// RedactArgs redacts the given arguments in traces and logs.
+func RedactArgs(args ...string) Option {
+	return WithArgsRedaction(newArgsRedactor(args...))
+}
+
 // WithLogger sets the logger.
 func WithLogger(logger ctxd.Logger) Option {
 	return optionFunc(func(c *Cmd) {
@@ -388,4 +393,24 @@ func WithLogger(logger ctxd.Logger) Option {
 	})
 }
 
-type argsRedactor func(args []string) []string
+type argsRedactor func(args ...string) []string
+
+func newArgsRedactor(args ...string) argsRedactor {
+	oldNew := make([]string, 0, len(args)*2)
+
+	for i := range args {
+		oldNew = append(oldNew, args[i], "<redacted>")
+	}
+
+	replacer := strings.NewReplacer(oldNew...)
+
+	return func(args ...string) []string {
+		result := make([]string, len(args))
+
+		for i := range args {
+			result[i] = replacer.Replace(args[i])
+		}
+
+		return result
+	}
+}
