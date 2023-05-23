@@ -14,6 +14,7 @@ import (
 
 	"github.com/bool64/ctxd"
 	"github.com/kballard/go-shellquote"
+	"go.nhat.io/redact"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
@@ -374,16 +375,16 @@ func WithTracer(tracer trace.Tracer) Option {
 	})
 }
 
-// WithArgsRedaction sets the redaction function for the arguments.
-func WithArgsRedaction(redact argsRedactor) Option {
+// WithArgsRedactor sets the redactor to redact the arguments.
+func WithArgsRedactor(r redact.Redactor) Option {
 	return optionFunc(func(c *Cmd) {
-		c.redact = redact
+		c.redact = r.Redact
 	})
 }
 
 // RedactArgs redacts the given arguments in traces and logs.
 func RedactArgs(args ...string) Option {
-	return WithArgsRedaction(newArgsRedactor(args...))
+	return WithArgsRedactor(redact.Values(args...))
 }
 
 // WithLogger sets the logger.
@@ -394,23 +395,3 @@ func WithLogger(logger ctxd.Logger) Option {
 }
 
 type argsRedactor func(args ...string) []string
-
-func newArgsRedactor(args ...string) argsRedactor {
-	oldNew := make([]string, 0, len(args)*2)
-
-	for i := range args {
-		oldNew = append(oldNew, args[i], "<redacted>")
-	}
-
-	replacer := strings.NewReplacer(oldNew...)
-
-	return func(args ...string) []string {
-		result := make([]string, len(args))
-
-		for i := range args {
-			result[i] = replacer.Replace(args[i])
-		}
-
-		return result
-	}
-}
