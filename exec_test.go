@@ -362,16 +362,20 @@ func Test_AppendArgs(t *testing.T) {
 func Test_WithArgsRedaction(t *testing.T) {
 	t.Parallel()
 
-	_, err := exec.Run("echo", exec.WithArgs("hello"),
-		exec.AppendArgs("c", "d"),
-		exec.WithStdout(io.Discard),
+	logger := &ctxd.LoggerMock{}
+	cmdOut := newSafeBuffer()
+
+	_, err := exec.Run("sh", exec.WithArgs("-c", `echo "hello"; exit 1`),
+		exec.WithStdout(cmdOut),
 		exec.WithStderr(io.Discard),
-		exec.WithArgsRedaction(func(args []string) []string {
-			return nil
-		}),
+		exec.RedactArgs("hello"),
+		exec.WithLogger(logger),
 	)
 
-	require.NoError(t, err)
+	require.NotNil(t, err)
+
+	assert.Equal(t, "hello", getOutput(cmdOut))
+	assert.Contains(t, logger.String(), `sh -c echo \"\u003credacted\u003e\";`)
 }
 
 func getOutput(s fmt.Stringer) string {
