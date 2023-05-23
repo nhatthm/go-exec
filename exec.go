@@ -39,6 +39,8 @@ type Cmd struct {
 	closer io.Closer
 	tracer trace.Tracer
 	logger ctxd.Logger
+
+	redact argsRedactor
 }
 
 // String returns a human-readable description of c. It is intended only for debugging.
@@ -77,7 +79,7 @@ func (c *Cmd) Start() error {
 
 	ctx, span := c.tracer.Start(c.ctx, "exec:run",
 		trace.WithAttributes(
-			attribute.StringSlice("exec.args", c.Args),
+			attribute.StringSlice("exec.args", c.redact(c.Args)),
 		),
 	)
 
@@ -171,7 +173,7 @@ func (c *Cmd) Wait() (err error) {
 		}()
 	}
 
-	defer c.closer.Close() //nolint: errcheck
+	defer c.closer.Close() //nolint: errcheck, gosec
 
 	if err = c.Cmd.Wait(); err != nil {
 		out := strings.Trim(c.stdErr.String(), "\r\n ")
@@ -226,6 +228,10 @@ func CommandContext(ctx context.Context, name string, opts ...Option) *Cmd {
 		tracer: trace.NewNoopTracerProvider().Tracer(""),
 		logger: ctxd.NoOpLogger{},
 		closer: io.NopCloser(nil),
+
+		redact: func(args []string) []string {
+			return args
+		},
 	}
 
 	c.Cmd.Env = os.Environ()
@@ -368,9 +374,18 @@ func WithTracer(tracer trace.Tracer) Option {
 	})
 }
 
+// WithArgsRedaction sets the redaction function for the arguments.
+func WithArgsRedaction(redact argsRedactor) Option {
+	return optionFunc(func(c *Cmd) {
+		c.redact = redact
+	})
+}
+
 // WithLogger sets the logger.
 func WithLogger(logger ctxd.Logger) Option {
 	return optionFunc(func(c *Cmd) {
 		c.logger = logger
 	})
 }
+
+type argsRedactor func(args []string) []string
