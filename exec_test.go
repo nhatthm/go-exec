@@ -375,7 +375,7 @@ func Test_WithArgsRedaction(t *testing.T) {
 	require.NotNil(t, err)
 
 	assert.Equal(t, "hello", getOutput(cmdOut))
-	assert.Contains(t, logger.String(), `sh -c echo \"\u003credacted\u003e\";`)
+	assert.Contains(t, logger.String(), `sh -c echo \"******\";`)
 }
 
 func getOutput(s fmt.Stringer) string {
