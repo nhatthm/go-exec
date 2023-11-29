@@ -1,6 +1,6 @@
 module go.nhat.io/exec
 
-go 1.18
+go 1.20
 
 require (
 	github.com/bool64/ctxd v1.2.1
