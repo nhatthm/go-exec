@@ -9,6 +9,10 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    groups:
+      otel:
+        patterns:
+          - "go.opentelemetry.io/*"
 
   - package-ecosystem: "github-actions"
     directory: "/"

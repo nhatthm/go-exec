@@ -12,7 +12,7 @@ import (
 	"github.com/bool64/ctxd"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"go.opentelemetry.io/otel/trace"
+	"go.opentelemetry.io/otel/trace/noop"
 
 	"go.nhat.io/exec"
 	exectest "go.nhat.io/exec/test"
@@ -326,7 +326,7 @@ func TestRun_Success_Pipe(t *testing.T) {
 		exec.WithStdout(cmdOut),
 		exec.WithStderr(cmdErr),
 		exec.WithLogger(logger),
-		exec.WithTracer(trace.NewNoopTracerProvider().Tracer("")),
+		exec.WithTracer(noop.NewTracerProvider().Tracer("")),
 		exec.Pipe("grep", "b"),
 		exec.Pipe("sed", "-E", "s#b#B#g"),
 	)

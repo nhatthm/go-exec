@@ -18,6 +18,7 @@ import (
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/codes"
 	"go.opentelemetry.io/otel/trace"
+	"go.opentelemetry.io/otel/trace/noop"
 )
 
 // ErrNotFound is the error resulting if a path search failed to find an executable file.
@@ -226,7 +227,7 @@ func CommandContext(ctx context.Context, name string, opts ...Option) *Cmd {
 
 		ctx:    ctx,
 		stdErr: new(bytes.Buffer),
-		tracer: trace.NewNoopTracerProvider().Tracer(""),
+		tracer: noop.NewTracerProvider().Tracer(""),
 		logger: ctxd.NoOpLogger{},
 		closer: io.NopCloser(nil),
 
