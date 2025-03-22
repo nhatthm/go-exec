@@ -19,38 +19,25 @@ linters-settings:
     threshold: 100
   misspell:
     locale: US
-  unused:
-    check-exported: false
-  unparam:
-    check-exported: true
 
 linters:
   enable-all: true
   disable:
-    - deadcode
-    - exhaustivestruct
     - exhaustruct
     - forbidigo
     - forcetypeassert
     - gci
     - gochecknoglobals
-    - golint
-    - gomnd
-    - ifshort
-    - interfacer
     - ireturn
     - lll
-    - maligned
+    - mnd
     - nonamedreturns
-    - nosnakecase
     - nolintlint # https://github.com/golangci/golangci-lint/issues/3063
     - paralleltest
-    - scopelint
-    - structcheck
     - tagliatelle
     - testifylint
+    - tenv
     - testpackage
-    - varcheck
     - varnamelen
     - wrapcheck
 
@@ -59,9 +46,9 @@ issues:
   exclude-rules:
     - linters:
         - dupl
+        - err113
         - funlen
         - goconst
-        - goerr113
-        - gomnd
+        - mnd
         - noctx
       path: "_test.go"

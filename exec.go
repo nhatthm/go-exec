@@ -95,8 +95,8 @@ func (c *Cmd) Start() error {
 
 	c.ctx = ctx
 	c.Cmd.Env = append(c.Cmd.Env,
-		fmt.Sprintf("TRACE_ID=%s", sc.TraceID().String()),
-		fmt.Sprintf("SPAN_ID=%s", sc.SpanID().String()),
+		"TRACE_ID="+sc.TraceID().String(),
+		"SPAN_ID="+sc.SpanID().String(),
 	)
 
 	if c.Next != nil {
@@ -270,7 +270,7 @@ func RunWithContext(ctx context.Context, name string, opts ...Option) (_ *Cmd, e
 
 func setupCmd(cmd *Cmd) error {
 	if cmd.Err != nil {
-		cmd.logger.Debug(cmd.ctx, fmt.Sprintf("%s not found", filepath.Base(cmd.Path)))
+		cmd.logger.Debug(cmd.ctx, filepath.Base(cmd.Path)+" not found")
 
 		return cmd.Err
 	}

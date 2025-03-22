@@ -3,7 +3,7 @@ MODULE_NAME=exec
 VENDOR_DIR = vendor
 GITHUB_OUTPUT ?= /dev/stdout
 
-GOLANGCI_LINT_VERSION ?= v1.55.2
+GOLANGCI_LINT_VERSION ?= v1.64.7
 
 GO ?= go
 GOLANGCI_LINT ?= $(shell go env GOPATH)/bin/golangci-lint-$(GOLANGCI_LINT_VERSION)

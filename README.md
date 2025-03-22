@@ -11,7 +11,7 @@ Package `exec` runs external commands.
 
 ## Prerequisites
 
-- `Go >= 1.20`
+- `Go >= 1.22`
 
 ## Install
 
