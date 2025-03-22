@@ -2,7 +2,6 @@
 package test
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -11,7 +10,7 @@ import (
 )
 
 func prepareBinary(path, content string) error {
-	content = fmt.Sprintf("#!/usr/bin/env bash\n%s", content)
+	content = "#!/usr/bin/env bash\n" + content
 
 	return os.WriteFile(filepath.Clean(path), []byte(content), 0o755) //nolint: gosec,wrapcheck,gomnd
 }
@@ -22,7 +21,7 @@ func Test(binaryName, binaryContent string, f func(t *testing.T)) func(t *testin
 		t.Helper()
 
 		tmpDir := t.TempDir()
-		t.Setenv("PATH", fmt.Sprintf("%s:/usr/bin:/bin", tmpDir))
+		t.Setenv("PATH", tmpDir+":/usr/bin:/bin")
 
 		err := prepareBinary(filepath.Join(tmpDir, binaryName), binaryContent)
 		require.NoError(t, err)
