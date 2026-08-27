@@ -12,7 +12,7 @@ import (
 func prepareBinary(path, content string) error {
 	content = "#!/usr/bin/env bash\n" + content
 
-	return os.WriteFile(filepath.Clean(path), []byte(content), 0o755) //nolint: gosec,wrapcheck,gomnd
+	return os.WriteFile(filepath.Clean(path), []byte(content), 0o755) //nolint: gosec,wrapcheck,mnd
 }
 
 // Test creates a test case that will prepare a binary in a temporary directory.

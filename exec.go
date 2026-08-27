@@ -1,4 +1,3 @@
-// Package exec is a wrapper around os/exec that provides a few extra features.
 package exec
 
 import (
@@ -33,8 +32,8 @@ func LookPath(file string) (string, error) {
 
 // Cmd is a wrapper around exec.Cmd.
 type Cmd struct {
-	*exec.Cmd
-	Next *Cmd
+	*exec.Cmd //nolint: embeddedstructfieldcheck
+	Next      *Cmd
 
 	ctx    context.Context //nolint: containedctx
 	stdErr *bytes.Buffer
@@ -76,7 +75,7 @@ func (c *Cmd) String() string {
 // After a successful call to Start the Wait method must be called in order to release associated system resources.
 func (c *Cmd) Start() error {
 	if c.Process != nil {
-		return errors.New("exec: already started") //nolint: goerr113
+		return errors.New("exec: already started") //nolint: err113
 	}
 
 	ctx, span := c.tracer.Start(c.ctx, "exec:run",
@@ -87,14 +86,14 @@ func (c *Cmd) Start() error {
 
 	sc := span.SpanContext()
 
-	if c.Cmd.Stderr == nil {
-		c.Cmd.Stderr = c.stdErr
+	if c.Stderr == nil {
+		c.Stderr = c.stdErr
 	} else {
-		c.Cmd.Stderr = io.MultiWriter(c.stdErr, c.Cmd.Stderr)
+		c.Stderr = io.MultiWriter(c.stdErr, c.Stderr)
 	}
 
 	c.ctx = ctx
-	c.Cmd.Env = append(c.Cmd.Env,
+	c.Env = append(c.Env,
 		"TRACE_ID="+sc.TraceID().String(),
 		"SPAN_ID="+sc.SpanID().String(),
 	)
@@ -133,11 +132,11 @@ func (c *Cmd) Start() error {
 // Wait releases any resources associated with the Cmd.
 func (c *Cmd) Wait() (err error) {
 	if c.Process == nil {
-		return errors.New("exec: not started") //nolint: goerr113
+		return errors.New("exec: not started") //nolint: err113
 	}
 
 	if c.ProcessState != nil {
-		return errors.New("exec: Wait was already called") //nolint: goerr113
+		return errors.New("exec: Wait was already called") //nolint: err113
 	}
 
 	span := trace.SpanFromContext(c.ctx)
@@ -215,7 +214,7 @@ func (c *Cmd) Run() error {
 //
 // See os/exec.Command for more information.
 func Command(name string, opts ...Option) *Cmd {
-	return CommandContext(context.Background(), name, opts...)
+	return CommandContext(context.Background(), name, opts...) //nolint: gosec
 }
 
 // CommandContext is like Command but includes a context.
@@ -236,7 +235,7 @@ func CommandContext(ctx context.Context, name string, opts ...Option) *Cmd {
 		},
 	}
 
-	c.Cmd.Env = os.Environ()
+	c.Env = os.Environ()
 
 	for _, opt := range opts {
 		opt.applyOption(c)
@@ -258,7 +257,7 @@ func Run(name string, opts ...Option) (*Cmd, error) {
 //
 // See os/exec.Command.Run for more information.
 func RunWithContext(ctx context.Context, name string, opts ...Option) (_ *Cmd, err error) {
-	cmd := CommandContext(ctx, name, opts...)
+	cmd := CommandContext(ctx, name, opts...) //nolint: gosec
 	if cmd.Err != nil {
 		cmd.logger.Debug(ctx, cmd.Err.Error())
 
